@@ -32,7 +32,7 @@ describe('PRTable', () => {
     expect(screen.getByText(/no pull requests/i)).toBeInTheDocument();
   });
 
-  it('renders table headers including Build', () => {
+  it('renders table headers including Build and Link', () => {
     render(<PRTable pullRequests={mockPRs} />);
     expect(screen.getByText('Title')).toBeInTheDocument();
     expect(screen.getByText('Author')).toBeInTheDocument();
@@ -40,6 +40,7 @@ describe('PRTable', () => {
     expect(screen.getByText('Status')).toBeInTheDocument();
     expect(screen.getByText('Build')).toBeInTheDocument();
     expect(screen.getByText('Created')).toBeInTheDocument();
+    expect(screen.getByText('Link')).toBeInTheDocument();
   });
 
   it('renders PR titles as links', () => {

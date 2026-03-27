@@ -26,6 +26,7 @@ export function PRTable({ pullRequests }: PRTableProps) {
             <th>Status</th>
             <th>Build</th>
             <th>Created</th>
+            <th>Link</th>
           </tr>
         </thead>
         <tbody>

@@ -269,6 +269,32 @@ body {
   color: var(--color-check-none);
 }
 
+.copy-link-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.copy-link-button:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background: #f0f6ff;
+}
+
+.copy-link-button.copied {
+  border-color: var(--color-open);
+  color: var(--color-open);
+  background: #d1f2eb;
+}
+
 .empty-state {
   text-align: center;
   padding: 3rem 1rem;
