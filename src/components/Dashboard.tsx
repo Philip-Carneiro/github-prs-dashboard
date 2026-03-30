@@ -13,7 +13,7 @@ interface DashboardProps {
 }
 
 export function Dashboard({ config }: DashboardProps) {
-  const { pullRequests, lastRefresh, isLoading, error, refresh } = usePullRequests();
+  const { pullRequests, isLoading, refreshStatus, refresh } = usePullRequests();
   const {
     filters,
     filteredPRs,
@@ -51,12 +51,10 @@ export function Dashboard({ config }: DashboardProps) {
     <div className="dashboard">
       <RefreshButton
         isLoading={isLoading}
-        lastRefresh={lastRefresh}
+        refreshStatus={refreshStatus}
         onRefresh={handleRefresh}
         autoRefreshEnabled={config.autoRefreshEnabled}
       />
-
-      {error && <div className="error-message">{error}</div>}
 
       <PRFilters
         filters={filters}

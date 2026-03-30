@@ -83,6 +83,13 @@ body {
   align-items: center;
   gap: 1rem;
   margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.refresh-status {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
 }
 
 .refresh-button {
@@ -109,6 +116,12 @@ body {
 .last-refresh {
   font-size: 0.8rem;
   color: var(--color-text-secondary);
+}
+
+.refresh-error {
+  font-size: 0.8rem;
+  color: var(--color-error);
+  font-weight: 500;
 }
 
 .error-message {

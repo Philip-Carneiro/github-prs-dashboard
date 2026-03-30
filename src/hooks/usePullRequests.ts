@@ -1,13 +1,12 @@
 import { useCallback, useState } from 'react';
 import { fetchAllPRs } from '../services/githubApi';
-import type { PullRequest } from '../types';
+import type { PullRequest, RefreshStatus } from '../types';
 import { useCachedData } from './useLocalStorage';
 
 interface UsePullRequestsReturn {
   pullRequests: PullRequest[];
-  lastRefresh: string | null;
   isLoading: boolean;
-  error: string | null;
+  refreshStatus: RefreshStatus;
   refresh: (
     repos: string[],
     authors: string[],
@@ -19,26 +18,41 @@ interface UsePullRequestsReturn {
 export function usePullRequests(): UsePullRequestsReturn {
   const { cachedData, setCachedData } = useCachedData();
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [refreshStatus, setRefreshStatus] = useState<RefreshStatus>(() => ({
+    lastSuccessfulRefresh: cachedData.lastRefresh,
+    lastFailedAttempt: null,
+    error: null,
+  }));
 
   const refresh = useCallback(
     async (repos: string[], authors: string[], token?: string, myUsername?: string) => {
       if (repos.length === 0 || authors.length === 0) {
-        setError('Please configure repositories and authors first.');
+        setRefreshStatus((prev) => ({
+          ...prev,
+          lastFailedAttempt: new Date().toISOString(),
+          error: 'Please configure repositories and authors first.',
+        }));
         return;
       }
 
       setIsLoading(true);
-      setError(null);
 
       try {
         const pullRequests = await fetchAllPRs(repos, authors, token, myUsername);
-        setCachedData({
-          pullRequests,
-          lastRefresh: new Date().toISOString(),
+        const now = new Date().toISOString();
+        setCachedData({ pullRequests, lastRefresh: now });
+        setRefreshStatus({
+          lastSuccessfulRefresh: now,
+          lastFailedAttempt: null,
+          error: null,
         });
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'An unknown error occurred');
+        const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred';
+        setRefreshStatus((prev) => ({
+          ...prev,
+          lastFailedAttempt: new Date().toISOString(),
+          error: errorMessage,
+        }));
       } finally {
         setIsLoading(false);
       }
@@ -48,9 +62,8 @@ export function usePullRequests(): UsePullRequestsReturn {
 
   return {
     pullRequests: cachedData.pullRequests,
-    lastRefresh: cachedData.lastRefresh,
     isLoading,
-    error,
+    refreshStatus,
     refresh,
   };
 }
