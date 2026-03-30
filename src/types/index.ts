@@ -44,6 +44,12 @@ export interface FilterState {
   buildStatusFilter: BuildStatusFilter;
 }
 
+export interface RefreshStatus {
+  lastSuccessfulRefresh: string | null;
+  lastFailedAttempt: string | null;
+  error: string | null;
+}
+
 export interface CachedData {
   pullRequests: PullRequest[];
   lastRefresh: string | null;
