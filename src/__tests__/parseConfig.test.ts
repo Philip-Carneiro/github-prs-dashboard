@@ -1,27 +1,21 @@
 import { describe, it, expect } from 'vitest';
-import {
-  parseRepositories,
-  parseAuthors,
-  normalizeRepoUrl,
-} from '../utils/parseConfig';
+import { parseRepositories, parseAuthors, normalizeRepoUrl } from '../utils/parseConfig';
 
 describe('normalizeRepoUrl', () => {
   it('parses full GitHub URL', () => {
-    expect(
-      normalizeRepoUrl('https://github.com/kubeflow/model-registry'),
-    ).toBe('kubeflow/model-registry');
+    expect(normalizeRepoUrl('https://github.com/kubeflow/model-registry')).toBe(
+      'kubeflow/model-registry'
+    );
   });
 
   it('strips trailing slashes', () => {
-    expect(
-      normalizeRepoUrl('https://github.com/kubeflow/model-registry/'),
-    ).toBe('kubeflow/model-registry');
+    expect(normalizeRepoUrl('https://github.com/kubeflow/model-registry/')).toBe(
+      'kubeflow/model-registry'
+    );
   });
 
   it('parses short form owner/repo', () => {
-    expect(normalizeRepoUrl('kubeflow/model-registry')).toBe(
-      'kubeflow/model-registry',
-    );
+    expect(normalizeRepoUrl('kubeflow/model-registry')).toBe('kubeflow/model-registry');
   });
 
   it('returns null for invalid input', () => {
@@ -30,9 +24,7 @@ describe('normalizeRepoUrl', () => {
   });
 
   it('handles http URLs', () => {
-    expect(
-      normalizeRepoUrl('http://github.com/org/repo'),
-    ).toBe('org/repo');
+    expect(normalizeRepoUrl('http://github.com/org/repo')).toBe('org/repo');
   });
 });
 
@@ -47,8 +39,7 @@ describe('parseRepositories', () => {
   });
 
   it('parses comma-separated URLs', () => {
-    const input =
-      'https://github.com/org/repo1, https://github.com/org/repo2';
+    const input = 'https://github.com/org/repo1, https://github.com/org/repo2';
     expect(parseRepositories(input)).toEqual(['org/repo1', 'org/repo2']);
   });
 
@@ -80,10 +71,7 @@ describe('parseAuthors', () => {
   });
 
   it('trims whitespace', () => {
-    expect(parseAuthors('  @user1  \n  user2  ')).toEqual([
-      'user1',
-      'user2',
-    ]);
+    expect(parseAuthors('  @user1  \n  user2  ')).toEqual(['user1', 'user2']);
   });
 
   it('handles empty input', () => {

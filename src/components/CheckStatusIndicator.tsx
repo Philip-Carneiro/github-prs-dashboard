@@ -14,9 +14,5 @@ const STATUS_CONFIG: Record<CheckStatus, { label: string; className: string }> =
 export function CheckStatusIndicator({ status }: CheckStatusIndicatorProps) {
   const config = STATUS_CONFIG[status] ?? STATUS_CONFIG.none;
 
-  return (
-    <span className={`check-status ${config.className}`}>
-      {config.label}
-    </span>
-  );
+  return <span className={`check-status ${config.className}`}>{config.label}</span>;
 }

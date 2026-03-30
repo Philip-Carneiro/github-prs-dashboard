@@ -12,6 +12,9 @@ import {
   saveToken,
 } from '../services/localApi';
 
+const MY_USERNAME_KEY = 'github-prs-dashboard:myUsername';
+const AUTO_REFRESH_KEY = 'github-prs-dashboard:autoRefreshEnabled';
+
 export async function loadConfig(): Promise<AppConfig> {
   const [dashboardTitle, authors, repositories, githubToken] = await Promise.all([
     loadDashboardTitle(),
@@ -20,7 +23,10 @@ export async function loadConfig(): Promise<AppConfig> {
     loadToken(),
   ]);
 
-  return { dashboardTitle, authors, repositories, githubToken };
+  const myUsername = localStorage.getItem(MY_USERNAME_KEY) ?? '';
+  const autoRefreshEnabled = localStorage.getItem(AUTO_REFRESH_KEY) === 'true';
+
+  return { dashboardTitle, authors, repositories, githubToken, myUsername, autoRefreshEnabled };
 }
 
 export async function saveConfig(config: AppConfig): Promise<void> {
@@ -30,6 +36,9 @@ export async function saveConfig(config: AppConfig): Promise<void> {
     saveRepositories(config.repositories),
     saveToken(config.githubToken),
   ]);
+
+  localStorage.setItem(MY_USERNAME_KEY, config.myUsername);
+  localStorage.setItem(AUTO_REFRESH_KEY, String(config.autoRefreshEnabled));
 }
 
 export async function loadCachedData(): Promise<CachedData> {

@@ -1,5 +1,6 @@
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import type { AppConfig } from '../types';
+import { useAutoRefresh } from '../hooks/useAutoRefresh';
 import { usePRFilters } from '../hooks/usePRFilters';
 import { usePullRequests } from '../hooks/usePullRequests';
 import { parseAuthors, parseRepositories } from '../utils/parseConfig';
@@ -12,8 +13,7 @@ interface DashboardProps {
 }
 
 export function Dashboard({ config }: DashboardProps) {
-  const { pullRequests, lastRefresh, isLoading, error, refresh } =
-    usePullRequests();
+  const { pullRequests, lastRefresh, isLoading, error, refresh } = usePullRequests();
   const {
     filters,
     filteredPRs,
@@ -21,6 +21,8 @@ export function Dashboard({ config }: DashboardProps) {
     setRepoFilter,
     setStatusFilter,
     toggleShowClosed,
+    setReviewFilter,
+    setBuildStatusFilter,
   } = usePRFilters(pullRequests);
 
   const uniqueAuthors = useMemo(() => {
@@ -35,12 +37,15 @@ export function Dashboard({ config }: DashboardProps) {
     return [...new Set([...fromConfig, ...fromPRs])].sort();
   }, [pullRequests, config.repositories]);
 
-  const handleRefresh = () => {
+  const handleRefresh = useCallback(() => {
     const repos = parseRepositories(config.repositories.join('\n'));
     const authors = parseAuthors(config.authors.join('\n'));
     const token = config.githubToken || undefined;
-    refresh(repos, authors, token);
-  };
+    const myUsername = config.myUsername || undefined;
+    refresh(repos, authors, token, myUsername);
+  }, [config, refresh]);
+
+  useAutoRefresh(config.autoRefreshEnabled, 300_000, handleRefresh, isLoading);
 
   return (
     <div className="dashboard">
@@ -48,6 +53,7 @@ export function Dashboard({ config }: DashboardProps) {
         isLoading={isLoading}
         lastRefresh={lastRefresh}
         onRefresh={handleRefresh}
+        autoRefreshEnabled={config.autoRefreshEnabled}
       />
 
       {error && <div className="error-message">{error}</div>}
@@ -56,10 +62,13 @@ export function Dashboard({ config }: DashboardProps) {
         filters={filters}
         authors={uniqueAuthors}
         repos={uniqueRepos}
+        myUsername={config.myUsername}
         onAuthorChange={setAuthorFilter}
         onRepoChange={setRepoFilter}
         onStatusChange={setStatusFilter}
         onToggleShowClosed={toggleShowClosed}
+        onReviewFilterChange={setReviewFilter}
+        onBuildStatusChange={setBuildStatusFilter}
       />
 
       <PRTable pullRequests={filteredPRs} />

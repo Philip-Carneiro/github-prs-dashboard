@@ -27,12 +27,7 @@ import {
   savePullRequests,
 } from '../services/localApi';
 
-import {
-  loadConfig,
-  saveConfig,
-  loadCachedData,
-  saveCachedData,
-} from '../utils/storage';
+import { loadConfig, saveConfig, loadCachedData, saveCachedData } from '../utils/storage';
 
 const mockedLoadDashboardTitle = vi.mocked(loadDashboardTitle);
 const mockedSaveDashboardTitle = vi.mocked(saveDashboardTitle);
@@ -45,17 +40,41 @@ const mockedSaveToken = vi.mocked(saveToken);
 const mockedLoadPullRequests = vi.mocked(loadPullRequests);
 const mockedSavePullRequests = vi.mocked(savePullRequests);
 
+const localStorageMock = (() => {
+  let store: Record<string, string> = {};
+  return {
+    getItem: vi.fn((key: string) => store[key] ?? null),
+    setItem: vi.fn((key: string, value: string) => {
+      store[key] = value;
+    }),
+    clear: () => {
+      store = {};
+    },
+  };
+})();
+
+Object.defineProperty(globalThis, 'localStorage', {
+  value: localStorageMock,
+  writable: true,
+});
+
 describe('storage utils', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    localStorageMock.clear();
   });
 
   describe('loadConfig', () => {
-    it('loads config from all sources', async () => {
+    it('loads config from all sources including localStorage', async () => {
       mockedLoadDashboardTitle.mockResolvedValue('My Team');
       mockedLoadAuthors.mockResolvedValue(['alice', 'bob']);
       mockedLoadRepositories.mockResolvedValue(['org/repo']);
       mockedLoadToken.mockResolvedValue('ghp_test');
+      localStorageMock.getItem.mockImplementation((key: string) => {
+        if (key === 'github-prs-dashboard:myUsername') return 'alice';
+        if (key === 'github-prs-dashboard:autoRefreshEnabled') return 'true';
+        return null;
+      });
 
       const config = await loadConfig();
 
@@ -64,6 +83,8 @@ describe('storage utils', () => {
         authors: ['alice', 'bob'],
         repositories: ['org/repo'],
         githubToken: 'ghp_test',
+        myUsername: 'alice',
+        autoRefreshEnabled: true,
       });
     });
 
@@ -72,6 +93,7 @@ describe('storage utils', () => {
       mockedLoadAuthors.mockResolvedValue([]);
       mockedLoadRepositories.mockResolvedValue([]);
       mockedLoadToken.mockResolvedValue('');
+      localStorageMock.getItem.mockReturnValue(null);
 
       const config = await loadConfig();
 
@@ -80,17 +102,21 @@ describe('storage utils', () => {
         authors: [],
         repositories: [],
         githubToken: '',
+        myUsername: '',
+        autoRefreshEnabled: false,
       });
     });
   });
 
   describe('saveConfig', () => {
-    it('saves config to all destinations', async () => {
+    it('saves config to all destinations including localStorage', async () => {
       const config: AppConfig = {
         dashboardTitle: 'My Team',
         authors: ['alice'],
         repositories: ['org/repo'],
         githubToken: 'ghp_token',
+        myUsername: 'alice',
+        autoRefreshEnabled: true,
       };
 
       mockedSaveDashboardTitle.mockResolvedValue();
@@ -104,6 +130,14 @@ describe('storage utils', () => {
       expect(mockedSaveAuthors).toHaveBeenCalledWith(['alice']);
       expect(mockedSaveRepositories).toHaveBeenCalledWith(['org/repo']);
       expect(mockedSaveToken).toHaveBeenCalledWith('ghp_token');
+      expect(localStorageMock.setItem).toHaveBeenCalledWith(
+        'github-prs-dashboard:myUsername',
+        'alice'
+      );
+      expect(localStorageMock.setItem).toHaveBeenCalledWith(
+        'github-prs-dashboard:autoRefreshEnabled',
+        'true'
+      );
     });
   });
 
@@ -141,10 +175,7 @@ describe('storage utils', () => {
 
       await saveCachedData(cached);
 
-      expect(mockedSavePullRequests).toHaveBeenCalledWith(
-        [],
-        '2024-01-01T00:00:00Z',
-      );
+      expect(mockedSavePullRequests).toHaveBeenCalledWith([], '2024-01-01T00:00:00Z');
     });
   });
 });

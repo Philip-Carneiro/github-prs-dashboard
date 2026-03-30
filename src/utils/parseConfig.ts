@@ -10,9 +10,7 @@ export function parseRepositories(text: string): string[] {
 export function normalizeRepoUrl(url: string): string | null {
   const cleaned = url.replace(/\/+$/, '').trim();
 
-  const httpsMatch = cleaned.match(
-    /^https?:\/\/github\.com\/([^/]+)\/([^/]+)/,
-  );
+  const httpsMatch = cleaned.match(/^https?:\/\/github\.com\/([^/]+)\/([^/]+)/);
   if (httpsMatch) {
     return `${httpsMatch[1]}/${httpsMatch[2]}`;
   }

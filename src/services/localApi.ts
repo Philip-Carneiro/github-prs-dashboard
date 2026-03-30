@@ -86,7 +86,7 @@ export async function loadPullRequests(): Promise<PullRequestsFile | null> {
 
 export async function savePullRequests(
   pullRequests: unknown[],
-  lastRefresh: string | null,
+  lastRefresh: string | null
 ): Promise<void> {
   await apiPut('pull-requests', { pullRequests, lastRefresh });
 }

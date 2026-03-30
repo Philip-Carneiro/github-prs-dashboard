@@ -9,6 +9,8 @@ const defaultFilters: FilterState = {
   repo: 'all',
   status: 'all',
   showClosed: false,
+  reviewFilter: 'all',
+  buildStatusFilter: 'all',
 };
 
 const authors = ['alice', 'bob', 'charlie'];
@@ -19,10 +21,13 @@ function renderFilters(overrides: Partial<Parameters<typeof PRFilters>[0]> = {})
     filters: defaultFilters,
     authors,
     repos,
+    myUsername: '',
     onAuthorChange: vi.fn(),
     onRepoChange: vi.fn(),
     onStatusChange: vi.fn(),
     onToggleShowClosed: vi.fn(),
+    onReviewFilterChange: vi.fn(),
+    onBuildStatusChange: vi.fn(),
     ...overrides,
   };
   render(<PRFilters {...defaults} />);
@@ -105,6 +110,8 @@ describe('PRFilters', () => {
       repo: 'org/repo2',
       status: 'open',
       showClosed: true,
+      reviewFilter: 'all',
+      buildStatusFilter: 'failed',
     };
 
     renderFilters({ filters: activeFilters });
@@ -113,5 +120,78 @@ describe('PRFilters', () => {
     expect(screen.getByLabelText('Repository')).toHaveValue('org/repo2');
     expect(screen.getByLabelText('Status')).toHaveValue('open');
     expect(screen.getByRole('checkbox')).toBeChecked();
+    expect(screen.getByLabelText('Build Status')).toHaveValue('failed');
+  });
+
+  it('does not render review dropdown when myUsername is empty', () => {
+    renderFilters({ myUsername: '' });
+
+    expect(screen.queryByLabelText('Review')).not.toBeInTheDocument();
+  });
+
+  it('renders review dropdown when myUsername is set', () => {
+    renderFilters({ myUsername: 'alice' });
+
+    expect(screen.getByLabelText('Review')).toBeInTheDocument();
+    expect(screen.getByText('All PRs')).toBeInTheDocument();
+    expect(screen.getByText('Needs my review')).toBeInTheDocument();
+    expect(screen.getByText('I requested changes')).toBeInTheDocument();
+    expect(screen.getByText('I approved')).toBeInTheDocument();
+  });
+
+  it('calls onReviewFilterChange when review filter is selected', async () => {
+    const user = userEvent.setup();
+    const { onReviewFilterChange } = renderFilters({ myUsername: 'alice' });
+
+    await user.selectOptions(screen.getByLabelText('Review'), 'needs_my_review');
+    expect(onReviewFilterChange).toHaveBeenCalledWith('needs_my_review');
+  });
+
+  it('renders build status dropdown with all options', () => {
+    renderFilters();
+
+    expect(screen.getByLabelText('Build Status')).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: 'All' })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: 'Passed' })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: 'Failed' })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: 'Pending' })).toBeInTheDocument();
+  });
+
+  it('calls onBuildStatusChange when build status is selected', async () => {
+    const user = userEvent.setup();
+    const { onBuildStatusChange } = renderFilters();
+
+    await user.selectOptions(screen.getByLabelText('Build Status'), 'passed');
+    expect(onBuildStatusChange).toHaveBeenCalledWith('passed');
+  });
+
+  it('calls onBuildStatusChange with pending when pending is selected', async () => {
+    const user = userEvent.setup();
+    const { onBuildStatusChange } = renderFilters();
+
+    await user.selectOptions(screen.getByLabelText('Build Status'), 'pending');
+    expect(onBuildStatusChange).toHaveBeenCalledWith('pending');
+  });
+
+  it('reflects current build status filter value', () => {
+    const activeFilters: FilterState = {
+      ...defaultFilters,
+      buildStatusFilter: 'passed',
+    };
+
+    renderFilters({ filters: activeFilters });
+
+    expect(screen.getByLabelText('Build Status')).toHaveValue('passed');
+  });
+
+  it('reflects pending build status filter value', () => {
+    const activeFilters: FilterState = {
+      ...defaultFilters,
+      buildStatusFilter: 'pending',
+    };
+
+    renderFilters({ filters: activeFilters });
+
+    expect(screen.getByLabelText('Build Status')).toHaveValue('pending');
   });
 });

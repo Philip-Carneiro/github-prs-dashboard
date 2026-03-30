@@ -1,11 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { AppConfig, CachedData } from '../types';
-import {
-  loadCachedData,
-  loadConfig,
-  saveCachedData,
-  saveConfig,
-} from '../utils/storage';
+import { loadCachedData, loadConfig, saveCachedData, saveConfig } from '../utils/storage';
 
 export function useAppConfig(): {
   config: AppConfig;
@@ -13,9 +8,12 @@ export function useAppConfig(): {
   isLoading: boolean;
 } {
   const [config, setConfigState] = useState<AppConfig>({
+    dashboardTitle: '',
     repositories: [],
     authors: [],
     githubToken: '',
+    myUsername: '',
+    autoRefreshEnabled: false,
   });
   const [isLoading, setIsLoading] = useState(true);
 

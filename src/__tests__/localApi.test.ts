@@ -41,9 +41,7 @@ describe('localApi', () => {
     });
 
     it('returns empty array on network error', async () => {
-      vi.spyOn(globalThis, 'fetch').mockRejectedValue(
-        new Error('Network error'),
-      );
+      vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('Network error'));
 
       const result = await loadAuthors();
       expect(result).toEqual([]);
@@ -108,8 +106,7 @@ describe('localApi', () => {
     it('returns token from API', async () => {
       vi.spyOn(globalThis, 'fetch').mockResolvedValue({
         ok: true,
-        json: () =>
-          Promise.resolve({ githubToken: 'ghp_test' }),
+        json: () => Promise.resolve({ githubToken: 'ghp_test' }),
       } as Response);
 
       const result = await loadToken();

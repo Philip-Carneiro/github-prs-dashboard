@@ -8,13 +8,11 @@ interface ConfigPageProps {
 
 export function ConfigPage({ config, onSave }: ConfigPageProps) {
   const [title, setTitle] = useState(config.dashboardTitle);
-  const [reposText, setReposText] = useState(
-    config.repositories.join('\n'),
-  );
-  const [authorsText, setAuthorsText] = useState(
-    config.authors.map((a) => `@${a}`).join('\n'),
-  );
+  const [reposText, setReposText] = useState(config.repositories.join('\n'));
+  const [authorsText, setAuthorsText] = useState(config.authors.map((a) => `@${a}`).join('\n'));
+  const [myUsername, setMyUsername] = useState(config.myUsername);
   const [token, setToken] = useState(config.githubToken);
+  const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(config.autoRefreshEnabled);
   const [saved, setSaved] = useState(false);
 
   const handleSave = () => {
@@ -28,7 +26,14 @@ export function ConfigPage({ config, onSave }: ConfigPageProps) {
       .map((author) => author.trim().replace(/^@/, ''))
       .filter(Boolean);
 
-    onSave({ dashboardTitle: title, repositories, authors, githubToken: token });
+    onSave({
+      dashboardTitle: title,
+      repositories,
+      authors,
+      githubToken: token,
+      myUsername: myUsername.trim().replace(/^@/, ''),
+      autoRefreshEnabled,
+    });
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   };
@@ -38,9 +43,7 @@ export function ConfigPage({ config, onSave }: ConfigPageProps) {
       <h2>Configuration</h2>
 
       <div className="config-field">
-        <label htmlFor="title-input">
-          Dashboard Title (optional)
-        </label>
+        <label htmlFor="title-input">Dashboard Title (optional)</label>
         <input
           id="title-input"
           type="text"
@@ -52,9 +55,7 @@ export function ConfigPage({ config, onSave }: ConfigPageProps) {
       </div>
 
       <div className="config-field">
-        <label htmlFor="repos-input">
-          Repositories (one per line or comma-separated)
-        </label>
+        <label htmlFor="repos-input">Repositories (one per line or comma-separated)</label>
         <textarea
           id="repos-input"
           value={reposText}
@@ -65,15 +66,25 @@ export function ConfigPage({ config, onSave }: ConfigPageProps) {
       </div>
 
       <div className="config-field">
-        <label htmlFor="authors-input">
-          Authors (one per line or comma-separated)
-        </label>
+        <label htmlFor="authors-input">Authors (one per line or comma-separated)</label>
         <textarea
           id="authors-input"
           value={authorsText}
           onChange={(e) => setAuthorsText(e.target.value)}
           placeholder={`@githubuser_1\n@githubuser_2`}
           rows={6}
+        />
+      </div>
+
+      <div className="config-field">
+        <label htmlFor="username-input">My GitHub Username (enables review filtering)</label>
+        <input
+          id="username-input"
+          type="text"
+          value={myUsername}
+          onChange={(e) => setMyUsername(e.target.value)}
+          placeholder="@Github-User"
+          autoComplete="off"
         />
       </div>
 
@@ -99,6 +110,17 @@ export function ConfigPage({ config, onSave }: ConfigPageProps) {
           </a>
           {' — '}only <strong>public_repo</strong> scope is needed (read-only).
         </small>
+      </div>
+
+      <div className="config-field">
+        <label className="checkbox-label">
+          <input
+            type="checkbox"
+            checked={autoRefreshEnabled}
+            onChange={(e) => setAutoRefreshEnabled(e.target.checked)}
+          />
+          Enable auto-refresh (every 5 min)
+        </label>
       </div>
 
       <button className="save-button" onClick={handleSave}>

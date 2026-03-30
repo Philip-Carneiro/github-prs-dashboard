@@ -7,9 +7,9 @@ const DATA_DIR = path.resolve(process.cwd(), 'data');
 const ENV_FILE = path.resolve(process.cwd(), '.env');
 
 const FILES: Record<string, string> = {
-  'authors': path.join(CONFIG_DIR, 'authors.json'),
-  'repositories': path.join(CONFIG_DIR, 'repositories.json'),
-  'dashboard': path.join(CONFIG_DIR, 'dashboard.json'),
+  authors: path.join(CONFIG_DIR, 'authors.json'),
+  repositories: path.join(CONFIG_DIR, 'repositories.json'),
+  dashboard: path.join(CONFIG_DIR, 'dashboard.json'),
   'pull-requests': path.join(DATA_DIR, 'pull-requests.json'),
 };
 
@@ -31,7 +31,9 @@ function writeJsonFile(filePath: string, data: unknown): void {
   fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf-8');
 }
 
-function parseBody(req: { on: (event: string, cb: (chunk: Buffer) => void) => void }): Promise<string> {
+function parseBody(req: {
+  on: (event: string, cb: (chunk: Buffer) => void) => void;
+}): Promise<string> {
   return new Promise((resolve) => {
     const chunks: Buffer[] = [];
     req.on('data', (chunk: Buffer) => chunks.push(chunk));

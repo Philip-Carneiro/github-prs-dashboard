@@ -1,14 +1,8 @@
 import type { FilterState, PullRequest } from '../types';
 
-export function filterPRs(
-  pullRequests: PullRequest[],
-  filters: FilterState,
-): PullRequest[] {
+export function filterPRs(pullRequests: PullRequest[], filters: FilterState): PullRequest[] {
   return pullRequests.filter((pr) => {
-    if (
-      filters.author !== 'all' &&
-      pr.author.toLowerCase() !== filters.author.toLowerCase()
-    ) {
+    if (filters.author !== 'all' && pr.author.toLowerCase() !== filters.author.toLowerCase()) {
       return false;
     }
 
@@ -21,6 +15,22 @@ export function filterPRs(
     }
 
     if (!filters.showClosed && pr.status !== 'open') {
+      return false;
+    }
+
+    if (filters.reviewFilter !== 'all' && pr.reviewRelation !== filters.reviewFilter) {
+      return false;
+    }
+
+    if (filters.buildStatusFilter === 'passed' && pr.checkStatus !== 'passed') {
+      return false;
+    }
+
+    if (filters.buildStatusFilter === 'failed' && pr.checkStatus !== 'failed') {
+      return false;
+    }
+
+    if (filters.buildStatusFilter === 'pending' && pr.checkStatus !== 'pending') {
       return false;
     }
 

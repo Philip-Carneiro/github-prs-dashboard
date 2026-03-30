@@ -8,7 +8,12 @@ interface UsePullRequestsReturn {
   lastRefresh: string | null;
   isLoading: boolean;
   error: string | null;
-  refresh: (repos: string[], authors: string[], token?: string) => Promise<void>;
+  refresh: (
+    repos: string[],
+    authors: string[],
+    token?: string,
+    myUsername?: string
+  ) => Promise<void>;
 }
 
 export function usePullRequests(): UsePullRequestsReturn {
@@ -17,7 +22,7 @@ export function usePullRequests(): UsePullRequestsReturn {
   const [error, setError] = useState<string | null>(null);
 
   const refresh = useCallback(
-    async (repos: string[], authors: string[], token?: string) => {
+    async (repos: string[], authors: string[], token?: string, myUsername?: string) => {
       if (repos.length === 0 || authors.length === 0) {
         setError('Please configure repositories and authors first.');
         return;
@@ -27,20 +32,18 @@ export function usePullRequests(): UsePullRequestsReturn {
       setError(null);
 
       try {
-        const pullRequests = await fetchAllPRs(repos, authors, token);
+        const pullRequests = await fetchAllPRs(repos, authors, token, myUsername);
         setCachedData({
           pullRequests,
           lastRefresh: new Date().toISOString(),
         });
       } catch (err) {
-        setError(
-          err instanceof Error ? err.message : 'An unknown error occurred',
-        );
+        setError(err instanceof Error ? err.message : 'An unknown error occurred');
       } finally {
         setIsLoading(false);
       }
     },
-    [setCachedData],
+    [setCachedData]
   );
 
   return {

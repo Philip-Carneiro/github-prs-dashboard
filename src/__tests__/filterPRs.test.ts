@@ -11,7 +11,9 @@ const mockPRs: PullRequest[] = [
     repo: 'org/repo',
     status: 'open',
     checkStatus: 'passed',
+    reviewRelation: 'not_involved',
     createdAt: '2024-01-15T10:00:00Z',
+    updatedAt: '2024-01-16T10:00:00Z',
   },
   {
     id: 2,
@@ -21,7 +23,9 @@ const mockPRs: PullRequest[] = [
     repo: 'org/repo',
     status: 'merged',
     checkStatus: 'passed',
+    reviewRelation: 'not_involved',
     createdAt: '2024-01-10T10:00:00Z',
+    updatedAt: '2024-01-12T10:00:00Z',
   },
   {
     id: 3,
@@ -31,7 +35,9 @@ const mockPRs: PullRequest[] = [
     repo: 'org/repo2',
     status: 'closed',
     checkStatus: 'failed',
+    reviewRelation: 'not_involved',
     createdAt: '2024-01-20T10:00:00Z',
+    updatedAt: '2024-01-21T10:00:00Z',
   },
   {
     id: 4,
@@ -41,7 +47,9 @@ const mockPRs: PullRequest[] = [
     repo: 'org/repo',
     status: 'open',
     checkStatus: 'pending',
+    reviewRelation: 'needs_my_review',
     createdAt: '2024-01-25T10:00:00Z',
+    updatedAt: '2024-01-26T10:00:00Z',
   },
 ];
 
@@ -52,6 +60,8 @@ describe('filterPRs', () => {
       repo: 'all',
       status: 'all',
       showClosed: false,
+      reviewFilter: 'all',
+      buildStatusFilter: 'all',
     };
     const result = filterPRs(mockPRs, filters);
     expect(result).toHaveLength(2);
@@ -64,6 +74,8 @@ describe('filterPRs', () => {
       repo: 'all',
       status: 'all',
       showClosed: true,
+      reviewFilter: 'all',
+      buildStatusFilter: 'all',
     };
     const result = filterPRs(mockPRs, filters);
     expect(result).toHaveLength(4);
@@ -75,6 +87,8 @@ describe('filterPRs', () => {
       repo: 'all',
       status: 'all',
       showClosed: true,
+      reviewFilter: 'all',
+      buildStatusFilter: 'all',
     };
     const result = filterPRs(mockPRs, filters);
     expect(result).toHaveLength(2);
@@ -87,6 +101,8 @@ describe('filterPRs', () => {
       repo: 'all',
       status: 'all',
       showClosed: true,
+      reviewFilter: 'all',
+      buildStatusFilter: 'all',
     };
     const result = filterPRs(mockPRs, filters);
     expect(result).toHaveLength(2);
@@ -98,6 +114,8 @@ describe('filterPRs', () => {
       repo: 'org/repo2',
       status: 'all',
       showClosed: true,
+      reviewFilter: 'all',
+      buildStatusFilter: 'all',
     };
     const result = filterPRs(mockPRs, filters);
     expect(result).toHaveLength(1);
@@ -110,6 +128,8 @@ describe('filterPRs', () => {
       repo: 'all',
       status: 'merged',
       showClosed: true,
+      reviewFilter: 'all',
+      buildStatusFilter: 'all',
     };
     const result = filterPRs(mockPRs, filters);
     expect(result).toHaveLength(1);
@@ -122,6 +142,8 @@ describe('filterPRs', () => {
       repo: 'org/repo',
       status: 'open',
       showClosed: true,
+      reviewFilter: 'all',
+      buildStatusFilter: 'all',
     };
     const result = filterPRs(mockPRs, filters);
     expect(result).toHaveLength(1);
@@ -134,9 +156,122 @@ describe('filterPRs', () => {
       repo: 'all',
       status: 'all',
       showClosed: true,
+      reviewFilter: 'all',
+      buildStatusFilter: 'all',
     };
     const result = filterPRs(mockPRs, filters);
     expect(result).toHaveLength(0);
+  });
+
+  it('filters by reviewRelation', () => {
+    const filters: FilterState = {
+      author: 'all',
+      repo: 'all',
+      status: 'all',
+      showClosed: false,
+      reviewFilter: 'needs_my_review',
+      buildStatusFilter: 'all',
+    };
+    const result = filterPRs(mockPRs, filters);
+    expect(result).toHaveLength(1);
+    expect(result[0].title).toBe('Update docs');
+  });
+
+  it('shows all review relations when reviewFilter is all', () => {
+    const filters: FilterState = {
+      author: 'all',
+      repo: 'all',
+      status: 'all',
+      showClosed: false,
+      reviewFilter: 'all',
+      buildStatusFilter: 'all',
+    };
+    const result = filterPRs(mockPRs, filters);
+    expect(result).toHaveLength(2);
+  });
+
+  it('filters by build status passed', () => {
+    const filters: FilterState = {
+      author: 'all',
+      repo: 'all',
+      status: 'all',
+      showClosed: true,
+      reviewFilter: 'all',
+      buildStatusFilter: 'passed',
+    };
+    const result = filterPRs(mockPRs, filters);
+    expect(result).toHaveLength(2);
+    expect(result.every((pr) => pr.checkStatus === 'passed')).toBe(true);
+  });
+
+  it('filters by build status failed', () => {
+    const filters: FilterState = {
+      author: 'all',
+      repo: 'all',
+      status: 'all',
+      showClosed: true,
+      reviewFilter: 'all',
+      buildStatusFilter: 'failed',
+    };
+    const result = filterPRs(mockPRs, filters);
+    expect(result).toHaveLength(1);
+    expect(result[0].checkStatus).toBe('failed');
+  });
+
+  it('filters by build status pending', () => {
+    const filters: FilterState = {
+      author: 'all',
+      repo: 'all',
+      status: 'all',
+      showClosed: true,
+      reviewFilter: 'all',
+      buildStatusFilter: 'pending',
+    };
+    const result = filterPRs(mockPRs, filters);
+    expect(result).toHaveLength(1);
+    expect(result[0].checkStatus).toBe('pending');
+    expect(result[0].title).toBe('Update docs');
+  });
+
+  it('does not filter by build status when set to all', () => {
+    const filters: FilterState = {
+      author: 'all',
+      repo: 'all',
+      status: 'all',
+      showClosed: true,
+      reviewFilter: 'all',
+      buildStatusFilter: 'all',
+    };
+    const result = filterPRs(mockPRs, filters);
+    expect(result).toHaveLength(4);
+  });
+
+  it('combines build status filter with other filters', () => {
+    const filters: FilterState = {
+      author: 'alice',
+      repo: 'all',
+      status: 'all',
+      showClosed: true,
+      reviewFilter: 'all',
+      buildStatusFilter: 'passed',
+    };
+    const result = filterPRs(mockPRs, filters);
+    expect(result).toHaveLength(1);
+    expect(result[0].title).toBe('Fix bug');
+  });
+
+  it('combines pending build status filter with author filter', () => {
+    const filters: FilterState = {
+      author: 'bob',
+      repo: 'all',
+      status: 'all',
+      showClosed: true,
+      reviewFilter: 'all',
+      buildStatusFilter: 'pending',
+    };
+    const result = filterPRs(mockPRs, filters);
+    expect(result).toHaveLength(1);
+    expect(result[0].title).toBe('Update docs');
   });
 });
 
