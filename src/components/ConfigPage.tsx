@@ -10,7 +10,7 @@ export function ConfigPage({ config, onSave }: ConfigPageProps) {
   const [title, setTitle] = useState(config.dashboardTitle);
   const [reposText, setReposText] = useState(config.repositories.join('\n'));
   const [authorsText, setAuthorsText] = useState(config.authors.map((a) => `@${a}`).join('\n'));
-  const [myUsername, setMyUsername] = useState(config.myUsername);
+  const [myUsername, setMyUsername] = useState(config.myUsername ? `@${config.myUsername}` : '');
   const [token, setToken] = useState(config.githubToken);
   const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(config.autoRefreshEnabled);
   const [saved, setSaved] = useState(false);
